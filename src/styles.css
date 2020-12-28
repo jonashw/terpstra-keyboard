@@ -5,6 +5,7 @@
 
 .btn {
 }
+
 .btn-lg {
   padding: 0.5em;
   font-size: 1.4em;
@@ -13,4 +14,12 @@
 .btn-block {
   display: block;
   width: 100%;
+}
+canvas {
+  margin: 0;
+  padding: 0;
+  box-shadow: 1px 0px 10px rgba(0, 0, 0, 0.2);
+}
+body {
+  margin: 0;
 }

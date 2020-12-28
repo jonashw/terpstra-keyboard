@@ -1,10 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./styles.css";
 import * as Tone from "tone";
 import { Stage, Layer, RegularPolygon, Group } from "react-konva";
 import distinctBy from "./distinctBy";
 import CenteredText from "./konva.centered-text.js";
 import useWindowSize from "./useWindowSize";
+import Fab from "@material-ui/core/Fab";
+import SettingsIcon from "@material-ui/icons/Settings";
+import Typography from "@material-ui/core/Typography";
+import Slider from "@material-ui/core/Slider";
+import Divider from "@material-ui/core/Divider";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
+import Box from "@material-ui/core/Box";
 
 const doAutoFocus = false;
 const twelveTone = [
@@ -108,46 +116,71 @@ const Hexagon = (R) => {
   return {
     R,
     r,
-    rowHeight: (R - r) * 11
+    rowHeight: (R * 6) / 4
   };
 };
 
 const keyColors = [1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1];
-const getKeys = (hex) =>
+const getKeys = (hex, rows) =>
   Array(25)
     .fill()
     .flatMap((c, i) => {
       let yOffset = hex.rowHeight * (i % 2);
       let octave = 4 + Math.floor(i / 12);
       let note = twelveTone[i % 12];
-      return [0, 1, 2].map((j) => ({
-        id: `${i}.${j}`,
-        note,
-        letter: note[0],
-        rowHeight: hex.rowHeight,
-        accidental: note.length === 2 ? note[1] : "",
-        octaveNote: `${note}${octave}`,
-        color: keyColors[i % keyColors.length] === 0 ? "black" : "white",
-        x: hex.r * i + hex.r,
-        y: hex.R + yOffset + j * hex.rowHeight * 2,
-        octave,
-        r: hex.r,
-        R: hex.R
-      }));
+      return Array(rows)
+        .fill()
+        .map((_, j) => {
+          let y = hex.R + yOffset + j * hex.rowHeight * 2;
+          let x = hex.r * i + hex.r;
+          return {
+            id: `${i}.${j}`,
+            note,
+            letter: note[0],
+            rowHeight: hex.rowHeight,
+            accidental: note.length === 2 ? note[1] : "",
+            octaveNote: `${note}${octave}`,
+            color: keyColors[i % keyColors.length] === 0 ? "black" : "white",
+            x,
+            y,
+            octave,
+            r: hex.r,
+            R: hex.R,
+            top: y - hex.R,
+            bottom: y + hex.R,
+            left: x - hex.R,
+            right: x + hex.R
+          };
+        });
     });
+
+import Drawer from "@material-ui/core/Drawer";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
 
 export default function App() {
   const [iw, ih] = useWindowSize();
-  var keyHexagon = Hexagon(iw / 23.5);
-  const keys = getKeys(keyHexagon);
-  const keyboardRotation = -10;
-  const stageHeight = ((d) => d + Math.cos(keyboardRotation * Math.PI) * 500)(
-    keys[0].rowHeight * 6.5
+  const [rows, setRows] = React.useState(3);
+  const [x, setX] = React.useState(0);
+  const [y, setY] = React.useState(0);
+  const [keyboardRotation, setKeyboardRotation] = React.useState(0);
+  var keyHexagon = Hexagon(iw / 23);
+  const keys = getKeys(keyHexagon, rows);
+
+  const [boardHeight, boardWidth] = keys.reduce(
+    ([h, w], k) => [Math.max(h, k.bottom), Math.max(w, k.right)],
+    [0, 0]
   );
-  const keyboardLength = "TODO";
+  const [boardDiagonalHeight, boardDiagonalWidth] = [
+    boardHeight +
+      Math.abs(boardWidth * 2 * Math.sin(Math.PI * keyboardRotation)),
+    boardWidth
+  ];
+  const offsetY = 0;
 
   const [state, setState] = React.useState({
     audioLoaded: false,
+    optionsVisible: false,
     highlighted: {}
   });
 
@@ -213,7 +246,45 @@ export default function App() {
     }
   };
 
-  const yOffset = 0; //80;
+  useEffect(() => {
+    if (!state.audioLoaded) {
+      loadAudio();
+    }
+  }, []);
+  const options = [
+    {
+      label: "Vertical Octaves",
+      value: rows,
+      setFn: setRows,
+      min: 1,
+      max: 6
+    },
+    {
+      label: "Rotation",
+      value: keyboardRotation,
+      setFn: setKeyboardRotation,
+      min: -15,
+      max: 15
+    }
+  ];
+  const variables = [
+    {
+      label: "Keyboard Width",
+      value: boardWidth.toFixed(2)
+    },
+    {
+      label: "Keyboard Height",
+      value: boardHeight.toFixed(2)
+    },
+    {
+      label: "Keyboard Diagonal Width",
+      value: boardDiagonalWidth.toFixed(2)
+    },
+    {
+      label: "Keyboard Diagonal Height",
+      value: boardDiagonalHeight.toFixed(2)
+    }
+  ];
   return (
     <div>
       {state.audioLoaded ? (
@@ -224,52 +295,115 @@ export default function App() {
           onKeyDown={(e) => trySetQwertyKeyPlaying(e, true)}
           onKeyUp={(e) => trySetQwertyKeyPlaying(e, false)}
         >
+          <Fab
+            color="primary"
+            aria-label="settings"
+            onClick={(e) => {
+              setState({ ...state, optionsVisible: true });
+            }}
+            style={{
+              position: "absolute",
+              right: "16px",
+              bottom: "16px"
+            }}
+          >
+            <SettingsIcon />
+          </Fab>
+          <Drawer
+            anchor={"bottom"}
+            open={state.optionsVisible}
+            onClose={() => setState({ ...state, optionsVisible: false })}
+          >
+            <List>
+              <ListItem key="Title">
+                <Typography variant="h6" gutterBottom>
+                  SETTINGS
+                </Typography>
+              </ListItem>
+              {options.map((o) => (
+                <ListItem key={o.label}>
+                  <Typography gutterBottom>{o.label}</Typography>
+                  <br />
+                  <Slider
+                    defaultValue={o.value}
+                    aria-labelledby="discrete-slider"
+                    valueLabelDisplay="auto"
+                    step={1}
+                    onChange={(e, newValue) => {
+                      o.setFn(newValue);
+                    }}
+                    marks
+                    min={o.min}
+                    max={o.max}
+                  />
+                </ListItem>
+              ))}
+            </List>
+            <Divider />
+            <List>
+              {variables.map((v) => (
+                <ListItem>
+                  <ListItemText primary={v.label} />
+                  <ListItemSecondaryAction>
+                    <Typography>{v.value}</Typography>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              ))}
+            </List>
+          </Drawer>
           {/* 
           <pre>{JSON.stringify(highlightedKeys,null,2)}</pre>
           */}
-
-          <Stage width={iw} height={stageHeight}>
-            <Layer rotation={keyboardRotation} y={yOffset}>
-              {keys.map((key) => {
-                return (
-                  <Group
-                    key={key.id}
-                    x={key.x + 1}
-                    y={key.y + 2}
-                    onMouseOver={() => setKeyHighlight(key, true)}
-                    onMouseOut={() => setKeyHighlight(key, false)}
-                    onTouchStart={() => setKeyHighlight(key, true)}
-                    onTouchEnd={() => setKeyHighlight(key, false)}
-                  >
-                    <RegularPolygon
-                      sides={6}
-                      radius={key.R}
-                      fill={
-                        isKeyHighlighted(key)
-                          ? "green"
-                          : key.color === "white"
-                          ? "#ffffff"
-                          : "#333333"
-                      }
-                      stroke={key.color === "black" ? "#000000" : "#000000"}
-                      strokeWidth={1}
-                    />
-                    {/*
+          <Stage width={boardWidth} height={boardHeight + 3}>
+            <Layer>
+              <Group
+                rotation={keyboardRotation}
+                x={boardDiagonalWidth / 2}
+                y={boardDiagonalHeight / 2 + offsetY}
+                offsetX={boardDiagonalWidth / 2}
+                offsetY={boardDiagonalHeight / 2}
+              >
+                {keys.map((key) => {
+                  return (
+                    <Group
+                      key={key.id}
+                      x={key.x + 1}
+                      y={key.y + 2}
+                      onMouseOver={() => setKeyHighlight(key, true)}
+                      onMouseOut={() => setKeyHighlight(key, false)}
+                      onTouchStart={() => setKeyHighlight(key, true)}
+                      onTouchEnd={() => setKeyHighlight(key, false)}
+                    >
+                      <RegularPolygon
+                        sides={6}
+                        radius={key.R}
+                        fill={
+                          isKeyHighlighted(key)
+                            ? "green"
+                            : key.color === "white"
+                            ? "#ffffff"
+                            : "#333333"
+                        }
+                        stroke={key.color === "black" ? "#000000" : "#000000"}
+                        strokeWidth={1}
+                      />
+                      {/*
                     <Circle
                       radius={5}
                       fill={key.color === "black" ? "#ffffff" : "#000000"}
                     />
                     */}
-                    <CenteredText
-                      rotation={-keyboardRotation}
-                      text={key.octaveNote}
-                      offsetX={10}
-                      offsetY={5}
-                      fill={key.color === "black" ? "#ffffff" : "#333333"}
-                    />
-                  </Group>
-                );
-              })}
+                      <CenteredText
+                        rotation={-keyboardRotation}
+                        text={key.octaveNote}
+                        offsetX={10}
+                        offsetY={5}
+                        fill={key.color === "black" ? "#ffffff" : "#333333"}
+                      />
+                    </Group>
+                  );
+                })}
+              </Group>
             </Layer>
           </Stage>
           <div style={{ height: "1em", marginBottom: "1em" }}>
