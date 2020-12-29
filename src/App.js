@@ -7,12 +7,14 @@ import CenteredText from "./konva.centered-text.js";
 import useWindowSize from "./useWindowSize";
 import Fab from "@material-ui/core/Fab";
 import SettingsIcon from "@material-ui/icons/Settings";
+import MusicNoteIcon from "@material-ui/icons/MusicNote";
 import Typography from "@material-ui/core/Typography";
 import Slider from "@material-ui/core/Slider";
 import Divider from "@material-ui/core/Divider";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import Box from "@material-ui/core/Box";
+import Button from "@material-ui/core/Button";
 
 const doAutoFocus = false;
 const twelveTone = [
@@ -248,7 +250,7 @@ export default function App() {
 
   useEffect(() => {
     if (!state.audioLoaded) {
-      loadAudio();
+      //loadAudio();
     }
   }, []);
   const options = [
@@ -302,8 +304,9 @@ export default function App() {
               setState({ ...state, optionsVisible: true });
             }}
             style={{
+              zIndex: 100,
               position: "absolute",
-              right: "16px",
+              left: "16px",
               bottom: "16px"
             }}
           >
@@ -419,10 +422,23 @@ export default function App() {
           </div>
         </div>
       ) : (
-        <div>
-          <button onClick={loadAudio} className="btn btn-lg btn-block">
-            Load
-          </button>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            height: "100vh",
+            justifyContent: "center"
+          }}
+        >
+          <Button
+            size="large"
+            variant="outlined"
+            color="primary"
+            onClick={loadAudio}
+          >
+            <MusicNoteIcon />
+            Play
+          </Button>
         </div>
       )}
     </div>
