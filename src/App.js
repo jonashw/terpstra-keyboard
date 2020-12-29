@@ -8,6 +8,7 @@ import useWindowSize from "./useWindowSize";
 import Fab from "@material-ui/core/Fab";
 import SettingsIcon from "@material-ui/icons/Settings";
 import MusicNoteIcon from "@material-ui/icons/MusicNote";
+import CloseIcon from "@material-ui/icons/Close";
 import Typography from "@material-ui/core/Typography";
 import Slider from "@material-ui/core/Slider";
 import Divider from "@material-ui/core/Divider";
@@ -322,6 +323,15 @@ export default function App() {
                 <Typography variant="h6" gutterBottom>
                   SETTINGS
                 </Typography>
+                <ListItemSecondaryAction>
+                  <Button
+                    onClick={() => {
+                      setState({ ...state, optionsVisible: false });
+                    }}
+                  >
+                    <CloseIcon />
+                  </Button>
+                </ListItemSecondaryAction>
               </ListItem>
               {options.map((o) => (
                 <ListItem key={o.label}>
