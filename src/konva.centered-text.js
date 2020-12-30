@@ -4,9 +4,15 @@ import { Text } from "react-konva";
 class CenteredText extends React.Component {
   offsetX = 0;
   offsetY = 0;
-  componentDidMount() {
+  center() {
     this.offsetX = this.ref.textWidth / 2;
     this.offsetY = this.ref.textHeight / 2;
+  }
+  componentDidMount() {
+    this.center();
+  }
+  componentDidUpdate() {
+    this.center();
   }
   render() {
     return (

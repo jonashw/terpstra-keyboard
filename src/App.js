@@ -364,11 +364,9 @@ export default function App() {
                         rotation={-keyboardRotation}
                         text={
                           !state.showQwertyKeys
-                            ? key.mapping.octaveNote
+                            ? key.mapping.label
                             : key.qwertyKey
                         }
-                        offsetX={10}
-                        offsetY={5}
                         fill={
                           key.mapping.color === "black" ? "#ffffff" : "#333333"
                         }
