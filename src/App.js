@@ -11,108 +11,24 @@ import MusicNoteIcon from "@material-ui/icons/MusicNote";
 import CloseIcon from "@material-ui/icons/Close";
 import Typography from "@material-ui/core/Typography";
 import Slider from "@material-ui/core/Slider";
+import Switch from "@material-ui/core/Switch";
 import Divider from "@material-ui/core/Divider";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
-
+import qwertyMap from "./qwertyMap";
+import twelveToneMap from "./twelveToneMap";
 const doAutoFocus = false;
-const twelveTone = [
-  "C",
-  "C#",
-  "D",
-  "Eb",
-  "E",
-  "F",
-  "F#",
-  "G",
-  "Ab",
-  "A",
-  "Bb",
-  "B",
-  "C"
-];
 
-let qwertyRows = [
-  [
-    "`",
-    "1",
-    "`",
-    "2",
-    "`",
-    "3",
-    "`",
-    "4",
-    "`",
-    "5",
-    "`",
-    "6",
-    "`",
-    "7",
-    "`",
-    "8",
-    "`",
-    "9",
-    "`",
-    "0",
-    "`",
-    "-",
-    "`",
-    "="
-  ],
-  [
-    "q",
-    "a",
-    "w",
-    "s",
-    "e",
-    "d",
-    "r",
-    "f",
-    "t",
-    "g",
-    "y",
-    "h",
-    "u",
-    "j",
-    "i",
-    "k",
-    "o",
-    "l",
-    "p",
-    ";",
-    "[",
-    "'",
-    "]",
-    "Enter",
-    "\\"
-  ],
-  [
-    "ShiftLeft",
-    "AltLeft",
-    "z",
-    "MetaLeft",
-    "x",
-    "`",
-    "c",
-    "`",
-    "v",
-    "`",
-    "b",
-    "`",
-    "n",
-    "`",
-    "m",
-    "`",
-    ",",
-    "`",
-    ".",
-    "`",
-    "/",
-    "ShiftRight"
-  ]
-];
+const currentMapping = twelveToneMap;
+
+const initState = {
+  audioLoaded: false,
+  optionsVisible: false,
+  highlighted: {},
+  showQwertyKeys: false
+};
 
 const Hexagon = (R) => {
   let r = (Math.sqrt(3) * R) / 2;
@@ -123,30 +39,26 @@ const Hexagon = (R) => {
   };
 };
 
-const keyColors = [1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1];
-const getKeys = (hex, rows) =>
-  Array(25)
+const getKeys = ({ hex, rows, rowLength, startingOctave }) =>
+  Array(rowLength)
     .fill()
-    .flatMap((c, i) => {
-      let yOffset = hex.rowHeight * (i % 2);
-      let octave = 4 + Math.floor(i / 12);
-      let note = twelveTone[i % 12];
-      return Array(rows)
+    .flatMap((_, i) => {
+      return Array(rows * 2)
         .fill()
         .map((_, j) => {
-          let y = hex.R + yOffset + j * hex.rowHeight * 2;
-          let x = hex.r * i + hex.r;
+          let xOffset = j % 2 === 0 ? 0 : hex.r;
+          let coord = [j, i];
+          let y = hex.R + j * hex.rowHeight;
+          let x = 2 * hex.r * i + hex.r + xOffset;
+          let key = currentMapping.getKeyAt(startingOctave, coord);
+
           return {
-            id: `${i}.${j}`,
-            note,
-            letter: note[0],
+            id: `${j}.${i}`,
+            mapping: key,
             rowHeight: hex.rowHeight,
-            accidental: note.length === 2 ? note[1] : "",
-            octaveNote: `${note}${octave}`,
-            color: keyColors[i % keyColors.length] === 0 ? "black" : "white",
             x,
             y,
-            octave,
+            qwertyKey: qwertyMap.coordToQwerty(coord),
             r: hex.r,
             R: hex.R,
             top: y - hex.R,
@@ -157,6 +69,21 @@ const getKeys = (hex, rows) =>
         });
     });
 
+const htmlKeyLabel = (mappingId, key) => {
+  switch (mappingId) {
+    case "12-tone":
+      return (
+        <span key={key.octaveNote}>
+          <span>{key.letter}</span>
+          <sup>{key.accidental}</sup>
+          <sub>{key.octave}</sub>
+        </span>
+      );
+    default:
+      return key.label;
+  }
+};
+
 import Drawer from "@material-ui/core/Drawer";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -164,11 +91,16 @@ import ListItem from "@material-ui/core/ListItem";
 export default function App() {
   const [iw, ih] = useWindowSize();
   const [rows, setRows] = React.useState(3);
-  const [x, setX] = React.useState(0);
-  const [y, setY] = React.useState(0);
+
+  const [startingOctave, setStartingOctave] = React.useState(4);
   const [keyboardRotation, setKeyboardRotation] = React.useState(0);
   var keyHexagon = Hexagon(iw / 23);
-  const keys = getKeys(keyHexagon, rows);
+  const keys = getKeys({
+    hex: keyHexagon,
+    rows,
+    rowLength: 12,
+    startingOctave
+  });
 
   const [boardHeight, boardWidth] = keys.reduce(
     ([h, w], k) => [Math.max(h, k.bottom), Math.max(w, k.right)],
@@ -181,19 +113,10 @@ export default function App() {
   ];
   const offsetY = 0;
 
-  const [state, setState] = React.useState({
-    audioLoaded: false,
-    optionsVisible: false,
-    highlighted: {}
-  });
+  const [state, setState] = React.useState(initState);
 
   const setKeyHighlight = (k, add1) => {
-    let h = Math.max((state.highlighted[k.octaveNote] || 0) + (add1 ? 1 : -1));
-    setState({
-      ...state,
-      highlighted: { ...state.highlighted, [k.octaveNote]: h }
-    });
-    playOctaveNote(k.octaveNote, add1);
+    playOctaveNote(k.mapping.octaveNote, add1);
   };
 
   const synth = React.useRef(null);
@@ -203,31 +126,34 @@ export default function App() {
     setState({ ...state, audioLoaded: true });
   };
 
-  const isKeyHighlighted = (k) => (state.highlighted[k.octaveNote] || 0) > 0;
+  const isKeyHighlighted = (k) =>
+    (state.highlighted[k.mapping.octaveNote] || 0) > 0;
 
   const highlightedKeys = keys.filter(isKeyHighlighted);
 
   const tryGetOctaveNoteQwertyNote = (e) => {
     let qk = e.key.length === 1 ? e.key.toLowerCase() : e.key;
-    let i = qwertyRows
-      .map((row) => Math.max(row.indexOf(qk), row.indexOf(e.code)))
-      .filter((i) => i >= 0)[0];
-    if (!isNaN(i) && 0 <= i) {
-      let tone = twelveTone[i % 12];
-      let octave = Math.floor(i / 12) + 4;
-      return `${tone}${octave}`;
-    }
-    return undefined;
+    let coord = qwertyMap.qwertyToCoord(qk);
+    return currentMapping.getSynthToneAt(startingOctave, coord);
   };
 
   const playOctaveNote = (on, playing) => {
-    if (!playing) {
-      synth.current.triggerRelease([on], 1);
+    let prevKeyDownCount = state.highlighted[on] || 0;
+    let nextKeyDownCount = prevKeyDownCount + (playing ? 1 : -1);
+    if (nextKeyDownCount === 0) {
+      synth.current.triggerRelease([on], "8n");
     } else {
-      if ((state.highlighted[on] || 0) === 0) {
+      if (prevKeyDownCount === 0 && nextKeyDownCount === 1) {
         synth.current.triggerAttack([on], 1);
       }
     }
+    setState({
+      ...state,
+      highlighted: {
+        ...state.highlighted,
+        [on]: nextKeyDownCount
+      }
+    });
   };
 
   const trySetQwertyKeyPlaying = (e, playing) => {
@@ -237,13 +163,6 @@ export default function App() {
     if (!!on) {
       console.log(on);
       playOctaveNote(on, playing);
-      setState({
-        ...state,
-        highlighted: {
-          ...state.highlighted,
-          [on]: playing
-        }
-      });
     } else {
       console.log(e.key, e.code);
     }
@@ -256,6 +175,21 @@ export default function App() {
   }, []);
   const options = [
     {
+      type: "range",
+      label: "Start at Octave",
+      value: startingOctave,
+      setFn: setStartingOctave,
+      min: 1,
+      max: 8
+    },
+    {
+      type: "switch",
+      label: "Show QWERTY keys",
+      checked: !!state.showQwertyKeys,
+      setFn: (sqk) => setState({ ...state, showQwertyKeys: !!sqk })
+    },
+    {
+      type: "range",
       label: "Vertical Octaves",
       value: rows,
       setFn: setRows,
@@ -263,6 +197,7 @@ export default function App() {
       max: 6
     },
     {
+      type: "range",
       label: "Rotation",
       value: keyboardRotation,
       setFn: setKeyboardRotation,
@@ -290,6 +225,7 @@ export default function App() {
   ];
   return (
     <div>
+      {/*<pre>{JSON.stringify(playingState, null, 2)}</pre>*/}
       {state.audioLoaded ? (
         <div
           ref={(input) => doAutoFocus && input && input.focus()}
@@ -337,18 +273,34 @@ export default function App() {
                 <ListItem key={o.label}>
                   <Typography gutterBottom>{o.label}</Typography>
                   <br />
-                  <Slider
-                    defaultValue={o.value}
-                    aria-labelledby="discrete-slider"
-                    valueLabelDisplay="auto"
-                    step={1}
-                    onChange={(e, newValue) => {
-                      o.setFn(newValue);
-                    }}
-                    marks
-                    min={o.min}
-                    max={o.max}
-                  />
+                  {(() => {
+                    switch (o.type) {
+                      case "switch":
+                        return (
+                          <Switch
+                            checked={o.checked}
+                            onChange={(e) => o.setFn(e.target.checked)}
+                          />
+                        );
+                      case "range":
+                        return (
+                          <Slider
+                            defaultValue={o.value}
+                            aria-labelledby="discrete-slider"
+                            valueLabelDisplay="auto"
+                            step={1}
+                            onChange={(e, newValue) => {
+                              o.setFn(newValue);
+                            }}
+                            marks
+                            min={o.min}
+                            max={o.max}
+                          />
+                        );
+                      default:
+                        return "";
+                    }
+                  })()}
                 </ListItem>
               ))}
             </List>
@@ -377,6 +329,19 @@ export default function App() {
                 offsetY={boardDiagonalHeight / 2}
               >
                 {keys.map((key) => {
+                  const grad = (c, c2) => ({
+                    fillRadialGradientStartPoint: { x: 0, y: 0 },
+                    fillRadialGradientStartRadius: 0,
+                    fillRadialGradientEndPoint: { x: 0, y: 0 },
+                    fillRadialGradientEndRadius: key.R,
+                    fillRadialGradientColorStops: [0, c, 0.7, c, 1, c2]
+                  });
+
+                  let fill = isKeyHighlighted(key)
+                    ? grad("#3399ff", "#1177dd")
+                    : key.mapping.color === "white"
+                    ? grad("#ffffff", "#cccccc")
+                    : grad("#555555", "#333333");
                   return (
                     <Group
                       key={key.id}
@@ -390,28 +355,23 @@ export default function App() {
                       <RegularPolygon
                         sides={6}
                         radius={key.R}
-                        fill={
-                          isKeyHighlighted(key)
-                            ? "green"
-                            : key.color === "white"
-                            ? "#ffffff"
-                            : "#333333"
-                        }
-                        stroke={key.color === "black" ? "#000000" : "#000000"}
+                        {...fill}
+                        stroke={"#000000"}
                         strokeWidth={1}
                       />
-                      {/*
-                    <Circle
-                      radius={5}
-                      fill={key.color === "black" ? "#ffffff" : "#000000"}
-                    />
-                    */}
+
                       <CenteredText
                         rotation={-keyboardRotation}
-                        text={key.octaveNote}
+                        text={
+                          !state.showQwertyKeys
+                            ? key.mapping.octaveNote
+                            : key.qwertyKey
+                        }
                         offsetX={10}
                         offsetY={5}
-                        fill={key.color === "black" ? "#ffffff" : "#333333"}
+                        fill={
+                          key.mapping.color === "black" ? "#ffffff" : "#333333"
+                        }
                       />
                     </Group>
                   );
@@ -420,14 +380,11 @@ export default function App() {
             </Layer>
           </Stage>
           <div style={{ height: "1em", marginBottom: "1em" }}>
-            {distinctBy(highlightedKeys, (k) => k.octaveNote)
-              .map((k, i) => (
-                <span key={k.octaveNote}>
-                  <span>{k.letter}</span>
-                  <sup>{k.accidental}</sup>
-                  <sub>{k.octave}</sub>
-                </span>
-              ))
+            {distinctBy(
+              highlightedKeys.map((k) => k.mapping),
+              (k) => k.octaveNote
+            )
+              .map((k, i) => htmlKeyLabel(currentMapping.id, k))
               .reduce((acc, k) => (acc == null ? [k] : [acc, " + ", k]), null)}
           </div>
         </div>
