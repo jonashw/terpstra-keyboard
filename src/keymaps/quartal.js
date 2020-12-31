@@ -18,9 +18,9 @@ const labels = [
 
 const keyColors = [1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1];
 
-class TwelveEDO extends KeyMap {
+class Quartal extends KeyMap {
   constructor() {
-    super("12-edo", "12-edo");
+    super("quartal", "Quartal");
   }
   coordToKey(startingOctave, coord) {
     if (!coord) {
@@ -28,15 +28,16 @@ class TwelveEDO extends KeyMap {
     }
     const startAdjust = 3;
     let [y, x] = coord;
-    let raw_i = 2 * x + (y % 2) - startAdjust;
+    let raw_i = 5 * (y % 2) + 9 * x + Math.floor(y / 2) - startAdjust;
     let i = raw_i % tones.length;
     let octave = startingOctave + Math.floor(raw_i / tones.length);
     let note = tones.slice(i)[0];
+    let label = labels.slice(i)[0];
     let octaveNote = `${note}${octave}`;
     let accidental = note.length === 1 ? "" : note[1];
     return {
       id: `${y}.${x}`,
-      label: labels.slice(i)[0] + octave,
+      label: label + octave,
       color: keyColors.slice(i)[0] === 1 ? "#ffffff" : "#555555",
       synthTone: octaveNote,
       coord,
@@ -50,4 +51,4 @@ class TwelveEDO extends KeyMap {
   }
 }
 
-export default new TwelveEDO();
+export default new Quartal();

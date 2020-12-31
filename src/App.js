@@ -23,9 +23,9 @@ const initState = {
   qwertyDown: {},
   downKeyIds: {},
   rows: 9,
-  rowLength: 14,
+  rowLength: 10,
   rotation: 0,
-  startingOctave: 4
+  startingOctave: 1
 };
 
 const Hexagon = ({ R, r }) => {
@@ -181,7 +181,7 @@ export default function App() {
       label: "Start at Octave",
       value: state.startingOctave,
       setFn: (so) => setState({ ...state, startingOctave: so }),
-      min: 1,
+      min: 0,
       max: 8
     },
     {

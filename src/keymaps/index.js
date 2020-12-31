@@ -1,6 +1,7 @@
 import React from "react";
 import twelveEDO from "./12edo";
 import fourtyEightEDO from "./48edo";
+import quartal from "./quartal";
 
 import KeyMap from "./KeyMap";
 class Single extends KeyMap {
@@ -15,7 +16,7 @@ class Single extends KeyMap {
 }
 let single = new Single();
 
-const all = [twelveEDO, single, fourtyEightEDO];
+const all = [quartal, twelveEDO, single, fourtyEightEDO];
 
 const htmlKeyLabelFn = (currentMapping) => {
   if (currentMapping === twelveEDO) {
