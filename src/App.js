@@ -11,8 +11,9 @@ import Button from "@material-ui/core/Button";
 import qwertyMap from "./qwertyMap";
 import keymaps from "./keymaps";
 import SettingsDrawer from "./SettingsDrawer";
-const doAutoFocus = false;
-const autoInitAudio = true;
+const productionBuild = true;
+const doAutoFocus = productionBuild;
+const autoInitAudio = !productionBuild;
 
 const initState = {
   currentMappingId: keymaps.all[0].id,
@@ -25,7 +26,8 @@ const initState = {
   rows: 9,
   rowLength: 10,
   rotation: 0,
-  startingOctave: 1
+  startingOctave: 1,
+  debug: false
 };
 
 const Hexagon = ({ R, r }) => {
@@ -125,24 +127,24 @@ export default function App() {
       return;
     }
     let downKeyIds = { ...state.downKeyIds };
-    let prevKeyDownCount = state.highlighted[st] || 0;
+    let highlighted = { ...state.highlighted };
+    let prevKeyDownCount = highlighted[st] || 0;
     let nextKeyDownCount = prevKeyDownCount + (playing ? 1 : -1);
     if (nextKeyDownCount === 0) {
       synth.current.triggerRelease([st]);
       delete downKeyIds[k.id];
+      delete highlighted[st];
     } else {
       if (prevKeyDownCount === 0 && nextKeyDownCount === 1) {
         synth.current.triggerAttack([st]);
         downKeyIds[k.id] = true;
+        highlighted[st] = nextKeyDownCount;
       }
     }
     setState({
       ...state,
       downKeyIds,
-      highlighted: {
-        ...state.highlighted,
-        [st]: nextKeyDownCount
-      }
+      highlighted
     });
   };
 
@@ -191,6 +193,12 @@ export default function App() {
       setFn: (sqk) => setState({ ...state, showQwertyKeys: !!sqk })
     },
     {
+      type: "switch",
+      label: "Show DEBUG information",
+      checked: !!state.debug,
+      setFn: (d) => setState({ ...state, debug: !!d })
+    },
+    {
       type: "range",
       label: "Rows",
       value: state.rows,
@@ -232,6 +240,7 @@ export default function App() {
     <div>
       {state.audioLoaded ? (
         <div
+          style={{ position: "relative" }}
           ref={(input) => doAutoFocus && input && input.focus()}
           autoFocus
           tabIndex="0"
@@ -325,6 +334,18 @@ export default function App() {
               .map((k, i) => htmlKeyLabel(k.mapping))
               .reduce((acc, k) => (acc == null ? [k] : [acc, " + ", k]), null)}
           </div>
+          {state.debug && (
+            <pre
+              style={{
+                position: "absolute",
+                pointerEvents: "none",
+                top: 0,
+                background: "rgba(255,255,255,0.8)"
+              }}
+            >
+              {JSON.stringify(state, null, 2)}
+            </pre>
+          )}
         </div>
       ) : (
         <div
