@@ -256,7 +256,7 @@ export default function App() {
                       0.7,
                       c,
                       1,
-                      ColorUtil.darkenHex(c, 20)
+                      ColorUtil.darkenHex(c, 30)
                     ]
                   });
 
