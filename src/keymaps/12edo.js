@@ -1,4 +1,4 @@
-import KeyMapping from "./KeyMapping";
+import KeyMap from "./KeyMap";
 const twelveTones = [
   "C",
   "C#",
@@ -16,9 +16,9 @@ const twelveTones = [
 
 const keyColors = [1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1];
 
-class TwelveToneMap extends KeyMapping {
+class TwelveEDO extends KeyMap {
   constructor() {
-    super("12-tone", "12-tone");
+    super("12-edo", "12-edo");
   }
   coordToKey(startingOctave, coord) {
     if (!coord) {
@@ -48,4 +48,4 @@ class TwelveToneMap extends KeyMapping {
   }
 }
 
-export default new TwelveToneMap();
+export default new TwelveEDO();

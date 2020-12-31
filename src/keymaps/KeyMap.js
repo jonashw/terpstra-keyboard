@@ -1,4 +1,4 @@
-export default class KeyMapping {
+export default class KeyMap {
   constructor(id, label) {
     this.id = id;
     this.label = label;

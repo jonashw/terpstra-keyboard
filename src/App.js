@@ -9,13 +9,13 @@ import MusicNoteIcon from "@material-ui/icons/MusicNote";
 import ColorUtil from "./colorUtil";
 import Button from "@material-ui/core/Button";
 import qwertyMap from "./qwertyMap";
-import toneMappings from "./toneMappings";
+import keymaps from "./keymaps";
 import SettingsDrawer from "./SettingsDrawer";
 const doAutoFocus = true;
 const autoInitAudio = false;
 
 const initState = {
-  currentMappingId: toneMappings.twelveTone.id,
+  currentMappingId: "12-edo",
   audioLoaded: false,
   optionsVisible: false,
   highlighted: {},
@@ -74,7 +74,7 @@ export default function App() {
   const setCurrentMappingId = (id) =>
     setState({ ...state, currentMappingId: id });
 
-  const currentMapping = toneMappings.byId[state.currentMappingId];
+  const currentMapping = keymaps.byId[state.currentMappingId];
 
   var keyHexagon = Hexagon({ R: iw / 23 });
   const keys = getKeys({
@@ -85,7 +85,7 @@ export default function App() {
     startingOctave
   });
 
-  const htmlKeyLabel = toneMappings.htmlKeyLabelFn(currentMapping);
+  const htmlKeyLabel = keymaps.htmlKeyLabelFn(currentMapping);
 
   const [boardHeight, boardWidth] = keys.reduce(
     ([h, w], k) => [Math.max(h, k.bottom), Math.max(w, k.right)],
@@ -165,7 +165,7 @@ export default function App() {
       id: "key-mapping-select",
       value: state.currentMappingId,
       setFn: setCurrentMappingId,
-      options: toneMappings.all.map((m) => ({
+      options: keymaps.all.map((m) => ({
         value: m.id,
         label: m.label
       }))

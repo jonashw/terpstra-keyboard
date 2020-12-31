@@ -1,9 +1,9 @@
 import React from "react";
-import twelveToneMap from "./twelveToneMap";
-import fourtyEightEDOToneMap from "./48edoMap";
+import twelveEDO from "./12edo";
+import fourtyEightEDO from "./48edo";
 
-import KeyMapping from "./KeyMapping";
-class Single extends KeyMapping {
+import KeyMap from "./KeyMap";
+class Single extends KeyMap {
   constructor() {
     super("single note", "Single Note");
   }
@@ -15,10 +15,10 @@ class Single extends KeyMapping {
 }
 let single = new Single();
 
-const all = [twelveToneMap, single, fourtyEightEDOToneMap];
+const all = [twelveEDO, single, fourtyEightEDO];
 
 const htmlKeyLabelFn = (currentMapping) => {
-  if (currentMapping === twelveToneMap) {
+  if (currentMapping === twelveEDO) {
     return (key) => (
       <span key={key.octaveNote}>
         <span>{key.letter}</span>
@@ -31,7 +31,6 @@ const htmlKeyLabelFn = (currentMapping) => {
   }
 };
 export default {
-  twelveTone: twelveToneMap,
   htmlKeyLabelFn,
   all: all,
   byId: all.reduce((dict, m) => {
