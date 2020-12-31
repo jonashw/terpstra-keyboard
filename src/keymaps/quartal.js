@@ -17,7 +17,16 @@ const labels = [
 ];
 
 const keyColors = [1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1];
-
+const quartal = {
+  minRows: 9,
+  rowLength: 10,
+  noteAt: ([y, x]) => 5 * (y % 2) + 9 * x + Math.floor(y / 2)
+};
+const halberstadt = {
+  minRows: 4,
+  rowLength: 14,
+  noteAt: ([y, x]) => 2 * x + (y % 2)
+};
 class Quartal extends KeyMap {
   constructor() {
     super("quartal", "Quartal");
@@ -26,9 +35,10 @@ class Quartal extends KeyMap {
     if (!coord) {
       return undefined;
     }
+    let layout = quartal;
     const startAdjust = 3;
     let [y, x] = coord;
-    let raw_i = 5 * (y % 2) + 9 * x + Math.floor(y / 2) - startAdjust;
+    let raw_i = layout.noteAt(coord) - startAdjust;
     let i = raw_i % tones.length;
     let octave = startingOctave + Math.floor(raw_i / tones.length);
     let note = tones.slice(i)[0];

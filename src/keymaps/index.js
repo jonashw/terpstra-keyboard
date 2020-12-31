@@ -1,7 +1,6 @@
 import React from "react";
-import twelveEDO from "./12edo";
+import TwelveTET from "./12tet";
 import fourtyEightEDO from "./48edo";
-import quartal from "./quartal";
 
 import KeyMap from "./KeyMap";
 class Single extends KeyMap {
@@ -16,10 +15,46 @@ class Single extends KeyMap {
 }
 let single = new Single();
 
-const all = [quartal, twelveEDO, single, fourtyEightEDO];
+const twelveTetLayout = {
+  quartal: {
+    minRows: 9,
+    rowLength: 10,
+    noteIndexAt: ([y, x]) =>
+      /*
+      Notes progress top-to-bottom, left-to-right.
+      Expected that columns alternate in length between 5 and 4 keys.
+      The major value in this layout is that it makes these intervals
+      accessible with neighboring keys:
+      - Major 3rd / Minor 6th
+      - Major 6th / Minor 3rd
+      - 4th / 5th
+    */
+      5 * (y % 2) + (5 + 4) * x + Math.floor(y / 2)
+  },
+  halberstadt: {
+    minRows: 4,
+    rowLength: 14,
+    noteIndexAt: ([y, x]) => 2 * x + (y % 2)
+  }
+};
+
+const all = [
+  new TwelveTET(
+    "quartal",
+    "12tet quartal",
+    twelveTetLayout.quartal.noteIndexAt
+  ),
+  new TwelveTET(
+    "halberstadt",
+    "12tet halberstadt",
+    twelveTetLayout.halberstadt.noteIndexAt
+  ),
+  single,
+  fourtyEightEDO
+];
 
 const htmlKeyLabelFn = (currentMapping) => {
-  if (currentMapping === twelveEDO) {
+  if (currentMapping instanceof TwelveTET) {
     return (key) => (
       <span key={key.octaveNote}>
         <span>{key.letter}</span>

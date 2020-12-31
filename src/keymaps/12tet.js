@@ -18,9 +18,10 @@ const labels = [
 
 const keyColors = [1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1];
 
-class TwelveEDO extends KeyMap {
-  constructor() {
-    super("12-edo", "12-edo");
+class TwelveTET extends KeyMap {
+  constructor(id, label, noteIndexAt) {
+    super(id, label);
+    this.noteIndexAt = noteIndexAt;
   }
   coordToKey(startingOctave, coord) {
     if (!coord) {
@@ -28,7 +29,7 @@ class TwelveEDO extends KeyMap {
     }
     const startAdjust = 3;
     let [y, x] = coord;
-    let raw_i = 2 * x + (y % 2) - startAdjust;
+    let raw_i = this.noteIndexAt(coord) - startAdjust;
     let i = raw_i % tones.length;
     let octave = startingOctave + Math.floor(raw_i / tones.length);
     let note = tones.slice(i)[0];
@@ -50,4 +51,4 @@ class TwelveEDO extends KeyMap {
   }
 }
 
-export default new TwelveEDO();
+export default TwelveTET;
