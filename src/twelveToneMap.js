@@ -59,6 +59,7 @@ const coordToSynthTone = (startingOctave, coord) => {
 
 export default {
   id: "12-tone",
+  label: "12-tone",
   getSynthToneAt: coordToSynthTone,
   getKeyAt: coordToKey
 };
