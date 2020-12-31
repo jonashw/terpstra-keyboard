@@ -33,6 +33,7 @@ class TwelveToneMap extends KeyMapping {
     let octaveNote = `${note}${octave}`;
     let accidental = note.length === 1 ? "" : note[1];
     return {
+      id: `${y}.${x}`,
       label: octaveNote,
       color: keyColors[i + startAdjust] === 1 ? "#ffffff" : "#555555",
       synthTone: octaveNote,

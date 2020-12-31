@@ -21,7 +21,9 @@ const initState = {
   audioLoaded: false,
   optionsVisible: false,
   highlighted: {},
-  showQwertyKeys: false
+  showQwertyKeys: false,
+  qwertyDown: {},
+  downKeyIds: {}
 };
 
 const Hexagon = ({ R }) => {
@@ -96,10 +98,6 @@ export default function App() {
   ];
   const offsetY = 0;
 
-  const setKeyHighlight = (k, add1) => {
-    playSynthTone(k.mapping.synthTone, add1);
-  };
-
   const synth = React.useRef(null);
 
   const loadAudio = () => {
@@ -107,29 +105,34 @@ export default function App() {
     setState({ ...state, audioLoaded: true });
   };
 
-  const isKeyHighlighted = (k) =>
-    (state.highlighted[k.mapping.synthTone] || 0) > 0;
-
-  const highlightedKeys = keys.filter(isKeyHighlighted);
-
-  const tryGetKeyByQwerty = (e) => {
-    let qk = e.key.length === 1 ? e.key.toLowerCase() : e.key;
-    let coord = qwertyMap.qwertyToCoord(qk);
-    return currentMapping.getSynthToneAt(startingOctave, coord);
+  const setKeyHighlight = (k, add1) => {
+    play(k.mapping, add1);
   };
 
-  const playSynthTone = (st, playing) => {
+  const isKeyHighlighted = (k) =>
+    (state.highlighted[k.mapping.synthTone] || 0) > 0;
+  const isKeyDown = (k) => !!state.downKeyIds[k.mapping.id];
+
+  const play = (k, playing) => {
+    let st = k.synthTone;
+    if (playing && k.id in state.downKeyIds) {
+      return;
+    }
+    let downKeyIds = { ...state.downKeyIds };
     let prevKeyDownCount = state.highlighted[st] || 0;
     let nextKeyDownCount = prevKeyDownCount + (playing ? 1 : -1);
     if (nextKeyDownCount === 0) {
-      synth.current.triggerRelease([st], "8n");
+      synth.current.triggerRelease([st]);
+      delete downKeyIds[k.id];
     } else {
       if (prevKeyDownCount === 0 && nextKeyDownCount === 1) {
-        synth.current.triggerAttack([st], 1);
+        synth.current.triggerAttack([st]);
+        downKeyIds[k.id] = true;
       }
     }
     setState({
       ...state,
+      downKeyIds,
       highlighted: {
         ...state.highlighted,
         [st]: nextKeyDownCount
@@ -138,12 +141,12 @@ export default function App() {
   };
 
   const trySetQwertyKeyPlaying = (e, playing) => {
-    let st = tryGetKeyByQwerty(e);
-    console.log(e.key, e.code, st);
+    let qwerty = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    let coord = qwertyMap.qwertyToCoord(qwerty);
+    let k = currentMapping.getKeyAt(startingOctave, coord);
 
-    if (!!st) {
-      console.log(st);
-      playSynthTone(st, playing);
+    if (!!k) {
+      play(k, playing);
     } else {
       console.log(e.key, e.code);
     }
@@ -154,6 +157,7 @@ export default function App() {
       loadAudio();
     }
   }, []);
+
   const options = [
     {
       type: "select",
@@ -216,6 +220,9 @@ export default function App() {
     }
   ];
   const setOptionsVisible = (v) => setState({ ...state, optionsVisible: v });
+
+  const downKeys = keys.filter(isKeyDown);
+
   return (
     <div>
       {state.audioLoaded ? (
@@ -264,7 +271,9 @@ export default function App() {
                     fill: c
                   });
 
-                  let fillColor = isKeyHighlighted(key)
+                  let fillColor = isKeyDown(key)
+                    ? "#33ff99"
+                    : isKeyHighlighted(key)
                     ? "#3399ff"
                     : key.mapping.color;
 
@@ -274,8 +283,8 @@ export default function App() {
                       key={key.id}
                       x={key.x + 1}
                       y={key.y + 2}
-                      onMouseOver={() => setKeyHighlight(key, true)}
-                      onMouseOut={() => setKeyHighlight(key, false)}
+                      onMouseEnter={() => setKeyHighlight(key, true)}
+                      onMouseLeave={() => setKeyHighlight(key, false)}
                       onTouchStart={() => setKeyHighlight(key, true)}
                       onTouchEnd={() => setKeyHighlight(key, false)}
                     >
@@ -303,11 +312,8 @@ export default function App() {
             </Layer>
           </Stage>
           <div style={{ height: "1em", marginBottom: "1em" }}>
-            {distinctBy(
-              highlightedKeys.map((k) => k.mapping),
-              (k) => k.octaveNote
-            )
-              .map((k, i) => htmlKeyLabel(k))
+            {downKeys
+              .map((k, i) => htmlKeyLabel(k.mapping))
               .reduce((acc, k) => (acc == null ? [k] : [acc, " + ", k]), null)}
           </div>
         </div>
