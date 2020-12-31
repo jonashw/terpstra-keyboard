@@ -5,26 +5,14 @@ import { Stage, Layer, RegularPolygon, Group } from "react-konva";
 import distinctBy from "./distinctBy";
 import CenteredText from "./konva.centered-text.js";
 import useWindowSize from "./useWindowSize";
-import Fab from "@material-ui/core/Fab";
-import SettingsIcon from "@material-ui/icons/Settings";
+
 import MusicNoteIcon from "@material-ui/icons/MusicNote";
-import CloseIcon from "@material-ui/icons/Close";
-import Typography from "@material-ui/core/Typography";
-import Slider from "@material-ui/core/Slider";
-import Switch from "@material-ui/core/Switch";
-import Select from "@material-ui/core/Select";
-import MenuItem from "@material-ui/core/MenuItem";
-import FormControl from "@material-ui/core/FormControl";
-import InputLabel from "@material-ui/core/InputLabel";
+
 import ColorUtil from "./colorUtil";
-import Divider from "@material-ui/core/Divider";
-import ListItemText from "@material-ui/core/ListItemText";
-import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
-import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
 import qwertyMap from "./qwertyMap";
 import toneMappings from "./toneMappings";
-
+import SettingsDrawer from "./SettingsDrawer";
 const doAutoFocus = false;
 const autoInitAudio = true;
 
@@ -75,16 +63,14 @@ const getKeys = ({ hex, rows, rowLength, startingOctave, currentMapping }) =>
         });
     });
 
-import Drawer from "@material-ui/core/Drawer";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-
 export default function App() {
   const [state, setState] = React.useState(initState);
   const [iw, ih] = useWindowSize();
   const [rows, setRows] = React.useState(3);
   const [startingOctave, setStartingOctave] = React.useState(4);
   const [keyboardRotation, setKeyboardRotation] = React.useState(0);
+  const setCurrentMappingId = (id) =>
+    setState({ ...state, currentMappingId: id });
 
   const currentMapping = toneMappings.byId[state.currentMappingId];
 
@@ -170,6 +156,17 @@ export default function App() {
   }, []);
   const options = [
     {
+      type: "select",
+      label: "Key Mapping",
+      id: "key-mapping-select",
+      value: state.currentMappingId,
+      setFn: setCurrentMappingId,
+      options: toneMappings.all.map((m) => ({
+        value: m.id,
+        label: m.label
+      }))
+    },
+    {
       type: "range",
       label: "Start at Octave",
       value: startingOctave,
@@ -218,9 +215,9 @@ export default function App() {
       value: boardDiagonalHeight.toFixed(2)
     }
   ];
+  const setOptionsVisible = (v) => setState({ ...state, optionsVisible: v });
   return (
     <div>
-      {/*<pre>{JSON.stringify(playingState, null, 2)}</pre>*/}
       {state.audioLoaded ? (
         <div
           ref={(input) => doAutoFocus && input && input.focus()}
@@ -229,109 +226,15 @@ export default function App() {
           onKeyDown={(e) => trySetQwertyKeyPlaying(e, true)}
           onKeyUp={(e) => trySetQwertyKeyPlaying(e, false)}
         >
-          <Fab
-            color="primary"
-            aria-label="settings"
-            onClick={(e) => {
-              setState({ ...state, optionsVisible: true });
+          <SettingsDrawer
+            {...{
+              options,
+              variables,
+              setOptionsVisible,
+              optionsVisible: state.optionsVisible
             }}
-            style={{
-              zIndex: 100,
-              position: "absolute",
-              left: "16px",
-              bottom: "16px"
-            }}
-          >
-            <SettingsIcon />
-          </Fab>
-          <Drawer
-            anchor={"bottom"}
-            open={state.optionsVisible}
-            onClose={() => setState({ ...state, optionsVisible: false })}
-          >
-            <List>
-              <ListItem key="Title">
-                <Typography variant="h6" gutterBottom>
-                  SETTINGS
-                </Typography>
-                <ListItemSecondaryAction>
-                  <Button
-                    onClick={() => {
-                      setState({ ...state, optionsVisible: false });
-                    }}
-                  >
-                    <CloseIcon />
-                  </Button>
-                </ListItemSecondaryAction>
-              </ListItem>
-              <ListItem>
-                <FormControl>
-                  <InputLabel id="tone-mapping-select">Key Mapping</InputLabel>
-                  <Select
-                    labelId="tone-mapping-select"
-                    value={state.currentMappingId}
-                    onChange={(e) =>
-                      setState({ ...state, currentMappingId: e.target.value })
-                    }
-                  >
-                    {toneMappings.all.map((m) => (
-                      <MenuItem value={m.id}>{m.label}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </ListItem>
-              {options.map((o) => (
-                <ListItem key={o.label}>
-                  <Typography gutterBottom>{o.label}</Typography>
-                  <br />
-                  {(() => {
-                    switch (o.type) {
-                      case "switch":
-                        return (
-                          <Switch
-                            checked={o.checked}
-                            onChange={(e) => o.setFn(e.target.checked)}
-                          />
-                        );
-                      case "range":
-                        return (
-                          <Slider
-                            defaultValue={o.value}
-                            aria-labelledby="discrete-slider"
-                            valueLabelDisplay="auto"
-                            step={1}
-                            onChange={(e, newValue) => {
-                              o.setFn(newValue);
-                            }}
-                            marks
-                            min={o.min}
-                            max={o.max}
-                          />
-                        );
-                      default:
-                        return "";
-                    }
-                  })()}
-                </ListItem>
-              ))}
-            </List>
-            {/*
-            <Divider />
-            <List>
-              {variables.map((v) => (
-                <ListItem>
-                  <ListItemText primary={v.label} />
-                  <ListItemSecondaryAction>
-                    <Typography>{v.value}</Typography>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              ))}
-            </List>
-            */}
-          </Drawer>
-          {/* 
-          <pre>{JSON.stringify(highlightedKeys,null,2)}</pre>
-          */}
+          />
+
           <Stage width={boardWidth} height={boardHeight + 3}>
             <Layer>
               <Group
