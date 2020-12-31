@@ -1,4 +1,5 @@
 import KeyMap from "./KeyMap";
+
 const tones = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
 
 const labels = [
@@ -16,12 +17,13 @@ const labels = [
   "B"
 ];
 
-const keyColors = [1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1];
+//55FF55
 
 class TwelveTET extends KeyMap {
-  constructor(id, label, noteIndexAt) {
+  constructor(id, label, noteIndexAt, colorMap) {
     super(id, label);
     this.noteIndexAt = noteIndexAt;
+    this.colorMap = colorMap;
   }
   coordToKey(startingOctave, coord) {
     if (!coord) {
@@ -38,7 +40,7 @@ class TwelveTET extends KeyMap {
     return {
       id: `${y}.${x}`,
       label: labels.slice(i)[0] + octave,
-      color: keyColors.slice(i)[0] === 1 ? "#ffffff" : "#555555",
+      color: this.colorMap.slice(i % this.colorMap.length)[0],
       synthTone: octaveNote,
       coord,
       //

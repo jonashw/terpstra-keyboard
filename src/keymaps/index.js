@@ -1,6 +1,7 @@
 import React from "react";
 import TwelveTET from "./12tet";
 import fourtyEightEDO from "./48edo";
+import ColorUtil from "../colorUtil";
 
 import KeyMap from "./KeyMap";
 class Single extends KeyMap {
@@ -14,6 +15,13 @@ class Single extends KeyMap {
   }
 }
 let single = new Single();
+
+const twelveTetColorMap = {
+  bw: [1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1].map((c) =>
+    c === 1 ? "#ffffff" : "#555555"
+  ),
+  rainbow: ColorUtil.rainbow(12, 10)
+};
 
 const twelveTetLayout = {
   quartal: {
@@ -41,13 +49,27 @@ const twelveTetLayout = {
 const all = [
   new TwelveTET(
     "quartal",
-    "12tet quartal",
-    twelveTetLayout.quartal.noteIndexAt
+    "12tet quartal b&w",
+    twelveTetLayout.quartal.noteIndexAt,
+    twelveTetColorMap.bw
   ),
   new TwelveTET(
-    "halberstadt",
-    "12tet halberstadt",
-    twelveTetLayout.halberstadt.noteIndexAt
+    "halberstadt b&w",
+    "12tet halberstadt b&w",
+    twelveTetLayout.halberstadt.noteIndexAt,
+    twelveTetColorMap.bw
+  ),
+  new TwelveTET(
+    "quartal rainbow",
+    "12tet quartal rainbow",
+    twelveTetLayout.quartal.noteIndexAt,
+    twelveTetColorMap.rainbow
+  ),
+  new TwelveTET(
+    "halberstadt rainbow",
+    "12tet halberstadt rainbow",
+    twelveTetLayout.halberstadt.noteIndexAt,
+    twelveTetColorMap.rainbow
   ),
   single,
   fourtyEightEDO

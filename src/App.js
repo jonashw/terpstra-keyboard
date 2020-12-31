@@ -274,9 +274,9 @@ export default function App() {
                   });
 
                   let fillColor = isKeyDown(key)
-                    ? "#3399ff"
+                    ? ColorUtil.darkenHex(key.mapping.color, 30)
                     : isKeyHighlighted(key)
-                    ? "#33ff99"
+                    ? ColorUtil.darkenHex(key.mapping.color, 15)
                     : key.mapping.color;
 
                   let fill = grad(fillColor);
