@@ -11,21 +11,31 @@ import Button from "@material-ui/core/Button";
 import qwertyMap from "./qwertyMap";
 import keymaps from "./keymaps";
 import SettingsDrawer from "./SettingsDrawer";
-const doAutoFocus = true;
-const autoInitAudio = false;
+const doAutoFocus = false;
+const autoInitAudio = true;
 
 const initState = {
-  currentMappingId: "12-edo",
+  currentMappingId: keymaps.all[0].id,
   audioLoaded: false,
   optionsVisible: false,
   highlighted: {},
   showQwertyKeys: false,
   qwertyDown: {},
-  downKeyIds: {}
+  downKeyIds: {},
+  rows: 9,
+  rowLength: 14,
+  rotation: 0,
+  startingOctave: 4
 };
 
-const Hexagon = ({ R }) => {
-  let r = (Math.sqrt(3) * R) / 2;
+const Hexagon = ({ R, r }) => {
+  if (!isNaN(R)) {
+    r = (Math.sqrt(3) * R) / 2;
+  } else if (!isNaN(r)) {
+    R = (2 * r) / Math.sqrt(3);
+  } else {
+    throw Error("expected numeric value or r or R");
+  }
   return {
     R,
     r,
@@ -39,7 +49,7 @@ const getKeys = ({ hex, rows, rowLength, startingOctave, currentMapping }) =>
   Array(rowLength)
     .fill()
     .flatMap((_, i) => {
-      return Array(rows * 2)
+      return Array(rows)
         .fill()
         .map((_, j) => {
           let xOffset = j % 2 === 0 ? 0 : hex.r;
@@ -68,21 +78,18 @@ const getKeys = ({ hex, rows, rowLength, startingOctave, currentMapping }) =>
 export default function App() {
   const [state, setState] = React.useState(initState);
   const [iw, ih] = useWindowSize();
-  const [rows, setRows] = React.useState(3);
-  const [startingOctave, setStartingOctave] = React.useState(4);
-  const [keyboardRotation, setKeyboardRotation] = React.useState(0);
   const setCurrentMappingId = (id) =>
     setState({ ...state, currentMappingId: id });
 
   const currentMapping = keymaps.byId[state.currentMappingId];
 
-  var keyHexagon = Hexagon({ R: iw / 23 });
+  var keyHexagon = Hexagon({ r: iw / (1 + state.rowLength * 2) });
   const keys = getKeys({
     hex: keyHexagon,
     currentMapping,
-    rows,
-    rowLength: 12,
-    startingOctave
+    rows: state.rows,
+    rowLength: state.rowLength,
+    startingOctave: state.startingOctave
   });
 
   const htmlKeyLabel = keymaps.htmlKeyLabelFn(currentMapping);
@@ -92,8 +99,7 @@ export default function App() {
     [0, 0]
   );
   const [boardDiagonalHeight, boardDiagonalWidth] = [
-    boardHeight +
-      Math.abs(boardWidth * 2 * Math.sin(Math.PI * keyboardRotation)),
+    boardHeight + Math.abs(boardWidth * 2 * Math.sin(Math.PI * state.rotation)),
     boardWidth
   ];
   const offsetY = 0;
@@ -143,7 +149,7 @@ export default function App() {
   const trySetQwertyKeyPlaying = (e, playing) => {
     let qwerty = e.key.length === 1 ? e.key.toLowerCase() : e.key;
     let coord = qwertyMap.qwertyToCoord(qwerty);
-    let k = currentMapping.getKeyAt(startingOctave, coord);
+    let k = currentMapping.getKeyAt(state.startingOctave, coord);
 
     if (!!k) {
       play(k, playing);
@@ -173,8 +179,8 @@ export default function App() {
     {
       type: "range",
       label: "Start at Octave",
-      value: startingOctave,
-      setFn: setStartingOctave,
+      value: state.startingOctave,
+      setFn: (so) => setState({ ...state, startingOctave: so }),
       min: 1,
       max: 8
     },
@@ -186,17 +192,17 @@ export default function App() {
     },
     {
       type: "range",
-      label: "Vertical Octaves",
-      value: rows,
-      setFn: setRows,
+      label: "Rows",
+      value: state.rows,
+      setFn: (r) => setState({ ...state, rows: r }),
       min: 1,
-      max: 6
+      max: 10
     },
     {
       type: "range",
       label: "Rotation",
-      value: keyboardRotation,
-      setFn: setKeyboardRotation,
+      value: state.rotation,
+      setFn: (r) => setState({ ...state, rotation: r }),
       min: -15,
       max: 15
     }
@@ -219,7 +225,6 @@ export default function App() {
       value: boardDiagonalHeight.toFixed(2)
     }
   ];
-  const setOptionsVisible = (v) => setState({ ...state, optionsVisible: v });
 
   const downKeys = keys.filter(isKeyDown);
 
@@ -237,7 +242,8 @@ export default function App() {
             {...{
               options,
               variables,
-              setOptionsVisible,
+              setOptionsVisible: (v) =>
+                setState({ ...state, optionsVisible: v }),
               optionsVisible: state.optionsVisible
             }}
           />
@@ -245,7 +251,7 @@ export default function App() {
           <Stage width={boardWidth} height={boardHeight + 3}>
             <Layer>
               <Group
-                rotation={keyboardRotation}
+                rotation={state.rotation}
                 x={boardDiagonalWidth / 2}
                 y={boardDiagonalHeight / 2 + offsetY}
                 offsetX={boardDiagonalWidth / 2}
@@ -299,7 +305,7 @@ export default function App() {
                         height={keyHexagon.d}
                         align="center"
                         verticalAlign="middle"
-                        rotation={-keyboardRotation}
+                        rotation={-state.rotation}
                         fontSize={(2 * keyHexagon.r) / 3}
                         text={
                           !state.showQwertyKeys
