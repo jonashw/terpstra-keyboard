@@ -15,14 +15,7 @@ class CenteredText extends React.Component {
     this.center();
   }
   render() {
-    return (
-      <Text
-        {...this.props}
-        ref={(r) => (this.ref = r)}
-        offsetX={this.offsetX}
-        offsetY={this.offsetY}
-      />
-    );
+    return <Text {...this.props} ref={(r) => (this.ref = r)} />;
   }
 }
 

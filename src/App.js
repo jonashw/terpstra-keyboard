@@ -1,9 +1,7 @@
 import React, { useEffect } from "react";
 import "./styles.css";
 import * as Tone from "tone";
-import { Stage, Layer, RegularPolygon, Group } from "react-konva";
-import distinctBy from "./distinctBy";
-import CenteredText from "./konva.centered-text.js";
+import { Text, Stage, Layer, RegularPolygon, Group } from "react-konva";
 import useWindowSize from "./useWindowSize";
 
 import MusicNoteIcon from "@material-ui/icons/MusicNote";
@@ -13,8 +11,8 @@ import Button from "@material-ui/core/Button";
 import qwertyMap from "./qwertyMap";
 import toneMappings from "./toneMappings";
 import SettingsDrawer from "./SettingsDrawer";
-const doAutoFocus = false;
-const autoInitAudio = true;
+const doAutoFocus = true;
+const autoInitAudio = false;
 
 const initState = {
   currentMappingId: toneMappings.twelveTone.id,
@@ -31,6 +29,8 @@ const Hexagon = ({ R }) => {
   return {
     R,
     r,
+    d: 2 * r,
+    D: 2 * R,
     rowHeight: (R * 6) / 4
   };
 };
@@ -267,14 +267,10 @@ export default function App() {
                     ]
                   });
 
-                  const f = (c) => ({
-                    fill: c
-                  });
-
                   let fillColor = isKeyDown(key)
-                    ? "#33ff99"
-                    : isKeyHighlighted(key)
                     ? "#3399ff"
+                    : isKeyHighlighted(key)
+                    ? "#33ff99"
                     : key.mapping.color;
 
                   let fill = grad(fillColor);
@@ -290,14 +286,21 @@ export default function App() {
                     >
                       <RegularPolygon
                         sides={6}
-                        radius={key.R}
+                        radius={keyHexagon.R}
                         {...fill}
                         stroke={"#000000"}
                         strokeWidth={1}
                       />
 
-                      <CenteredText
+                      <Text
+                        x={-keyHexagon.r}
+                        y={-keyHexagon.r}
+                        width={keyHexagon.d}
+                        height={keyHexagon.d}
+                        align="center"
+                        verticalAlign="middle"
                         rotation={-keyboardRotation}
+                        fontSize={(2 * keyHexagon.r) / 3}
                         text={
                           !state.showQwertyKeys
                             ? key.mapping.label
