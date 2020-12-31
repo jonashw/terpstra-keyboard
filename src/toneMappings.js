@@ -3,8 +3,17 @@ import twelveToneMap from "./twelveToneMap";
 import fourtyEightEDOToneMap from "./48edoMap";
 
 import KeyMapping from "./KeyMapping";
-
-let single = new KeyMapping("single note", "Single Note");
+class Single extends KeyMapping {
+  constructor() {
+    super("single note", "Single Note");
+  }
+  coordToKey(o, c) {
+    let k = super.coordToKey(o, c);
+    k.color = "#eeeeee";
+    return k;
+  }
+}
+let single = new Single();
 
 const all = [twelveToneMap, single, fourtyEightEDOToneMap];
 

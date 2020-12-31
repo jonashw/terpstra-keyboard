@@ -16,7 +16,7 @@ import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
-
+import ColorUtil from "./colorUtil";
 import Divider from "@material-ui/core/Divider";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
@@ -25,8 +25,8 @@ import Button from "@material-ui/core/Button";
 import qwertyMap from "./qwertyMap";
 import toneMappings from "./toneMappings";
 
-const doAutoFocus = true;
-const autoInitAudio = false;
+const doAutoFocus = false;
+const autoInitAudio = true;
 
 const initState = {
   currentMappingId: toneMappings.twelveTone.id,
@@ -111,7 +111,7 @@ export default function App() {
   const offsetY = 0;
 
   const setKeyHighlight = (k, add1) => {
-    playOctaveNote(k.mapping.octaveNote, add1);
+    playSynthTone(k.mapping.synthTone, add1);
   };
 
   const synth = React.useRef(null);
@@ -122,42 +122,42 @@ export default function App() {
   };
 
   const isKeyHighlighted = (k) =>
-    (state.highlighted[k.mapping.octaveNote] || 0) > 0;
+    (state.highlighted[k.mapping.synthTone] || 0) > 0;
 
   const highlightedKeys = keys.filter(isKeyHighlighted);
 
-  const tryGetOctaveNoteQwertyNote = (e) => {
+  const tryGetKeyByQwerty = (e) => {
     let qk = e.key.length === 1 ? e.key.toLowerCase() : e.key;
     let coord = qwertyMap.qwertyToCoord(qk);
     return currentMapping.getSynthToneAt(startingOctave, coord);
   };
 
-  const playOctaveNote = (on, playing) => {
-    let prevKeyDownCount = state.highlighted[on] || 0;
+  const playSynthTone = (st, playing) => {
+    let prevKeyDownCount = state.highlighted[st] || 0;
     let nextKeyDownCount = prevKeyDownCount + (playing ? 1 : -1);
     if (nextKeyDownCount === 0) {
-      synth.current.triggerRelease([on], "8n");
+      synth.current.triggerRelease([st], "8n");
     } else {
       if (prevKeyDownCount === 0 && nextKeyDownCount === 1) {
-        synth.current.triggerAttack([on], 1);
+        synth.current.triggerAttack([st], 1);
       }
     }
     setState({
       ...state,
       highlighted: {
         ...state.highlighted,
-        [on]: nextKeyDownCount
+        [st]: nextKeyDownCount
       }
     });
   };
 
   const trySetQwertyKeyPlaying = (e, playing) => {
-    let on = tryGetOctaveNoteQwertyNote(e);
-    console.log(e.key, e.code, on);
+    let st = tryGetKeyByQwerty(e);
+    console.log(e.key, e.code, st);
 
-    if (!!on) {
-      console.log(on);
-      playOctaveNote(on, playing);
+    if (!!st) {
+      console.log(st);
+      playSynthTone(st, playing);
     } else {
       console.log(e.key, e.code);
     }
@@ -342,19 +342,30 @@ export default function App() {
                 offsetY={boardDiagonalHeight / 2}
               >
                 {keys.map((key) => {
-                  const grad = (c, c2) => ({
+                  const grad = (c) => ({
                     fillRadialGradientStartPoint: { x: 0, y: 0 },
                     fillRadialGradientStartRadius: 0,
                     fillRadialGradientEndPoint: { x: 0, y: 0 },
                     fillRadialGradientEndRadius: key.R,
-                    fillRadialGradientColorStops: [0, c, 0.7, c, 1, c2]
+                    fillRadialGradientColorStops: [
+                      0,
+                      c,
+                      0.7,
+                      c,
+                      1,
+                      ColorUtil.darkenHex(c, 20)
+                    ]
                   });
 
-                  let fill = isKeyHighlighted(key)
-                    ? grad("#3399ff", "#1177dd")
-                    : key.mapping.color === "white"
-                    ? grad("#ffffff", "#cccccc")
-                    : grad("#555555", "#333333");
+                  const f = (c) => ({
+                    fill: c
+                  });
+
+                  let fillColor = isKeyHighlighted(key)
+                    ? "#3399ff"
+                    : key.mapping.color;
+
+                  let fill = grad(fillColor);
                   return (
                     <Group
                       key={key.id}
@@ -380,9 +391,7 @@ export default function App() {
                             ? key.mapping.label
                             : key.qwertyKey
                         }
-                        fill={
-                          key.mapping.color === "black" ? "#ffffff" : "#333333"
-                        }
+                        fill={ColorUtil.negativeHex(fillColor)}
                       />
                     </Group>
                   );
