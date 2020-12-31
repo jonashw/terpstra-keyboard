@@ -25,8 +25,8 @@ import Button from "@material-ui/core/Button";
 import qwertyMap from "./qwertyMap";
 import toneMappings from "./toneMappings";
 
-const doAutoFocus = false;
-const autoInitAudio = true;
+const doAutoFocus = true;
+const autoInitAudio = false;
 
 const initState = {
   currentMappingId: toneMappings.twelveTone.id,
