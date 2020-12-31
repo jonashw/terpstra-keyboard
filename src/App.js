@@ -391,7 +391,7 @@ export default function App() {
                             ? key.mapping.label
                             : key.qwertyKey
                         }
-                        fill={ColorUtil.negativeHex(fillColor)}
+                        fill={ColorUtil.highContrastHex(fillColor)}
                       />
                     </Group>
                   );
