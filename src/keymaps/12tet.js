@@ -17,7 +17,10 @@ const labels = [
   "B"
 ];
 
-const hz = (stepsOverA0) => 27.5 * Math.pow(Math.pow(2, 1 / 12), stepsOverA0);
+const genericHz = (stepsPerOctave, refPitch) => (stepsOverRefPitch) =>
+  refPitch * Math.pow(Math.pow(2, 1 / stepsPerOctave), stepsOverRefPitch);
+
+const hz = genericHz(12, 27.5);
 
 //55FF55
 
