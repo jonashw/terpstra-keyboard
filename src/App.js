@@ -11,7 +11,7 @@ import Button from "@material-ui/core/Button";
 import qwertyMap from "./qwertyMap";
 import keymaps from "./keymaps";
 import SettingsDrawer from "./SettingsDrawer";
-const productionBuild = true;
+const productionBuild = false;
 const doAutoFocus = productionBuild;
 const autoInitAudio = !productionBuild;
 
@@ -85,7 +85,15 @@ export default function App() {
 
   const currentMapping = keymaps.byId[state.currentMappingId];
 
-  var keyHexagon = Hexagon({ r: iw / (1 + state.rowLength * 2) });
+  let hexCandidates = [
+    Hexagon({ r: iw / (1 + state.rowLength * 2) }),
+    Hexagon({ R: ih / (state.rows * 2) })
+  ];
+
+  var keyHexagon = hexCandidates.reduce((smallest, h) =>
+    smallest.r < h.r ? smallest : h
+  );
+
   const keys = getKeys({
     hex: keyHexagon,
     currentMapping,
@@ -300,6 +308,7 @@ export default function App() {
                       onTouchEnd={() => setKeyHighlight(key, false)}
                     >
                       <RegularPolygon
+                        key={key.id + "-hex"}
                         sides={6}
                         radius={keyHexagon.R}
                         {...fill}
@@ -308,6 +317,7 @@ export default function App() {
                       />
 
                       <Text
+                        key={key.id + "-text"}
                         x={-keyHexagon.r}
                         y={-keyHexagon.r}
                         width={keyHexagon.d}
@@ -343,7 +353,7 @@ export default function App() {
                 background: "rgba(255,255,255,0.8)"
               }}
             >
-              {JSON.stringify(state, null, 2)}
+              {JSON.stringify({ state, hexCandidates }, null, 2)}
             </pre>
           )}
         </div>

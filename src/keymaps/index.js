@@ -25,6 +25,7 @@ const twelveTetColorMap = {
 
 const twelveTetLayout = {
   quartal: {
+    startingOctave: 0,
     minRows: 9,
     rowLength: 10,
     noteIndexAt: ([y, x]) =>
@@ -40,6 +41,7 @@ const twelveTetLayout = {
       5 * (y % 2) + (5 + 4) * x + Math.floor(y / 2)
   },
   halberstadt: {
+    startingOctave: 3,
     minRows: 4,
     rowLength: 14,
     noteIndexAt: ([y, x]) => 2 * x + (y % 2)
@@ -48,15 +50,15 @@ const twelveTetLayout = {
 
 const all = [
   new TwelveTET(
-    "quartal",
-    "12tet quartal b&w",
-    twelveTetLayout.quartal.noteIndexAt,
-    twelveTetColorMap.bw
-  ),
-  new TwelveTET(
     "halberstadt b&w",
     "12tet halberstadt b&w",
     twelveTetLayout.halberstadt.noteIndexAt,
+    twelveTetColorMap.bw
+  ),
+  new TwelveTET(
+    "quartal",
+    "12tet quartal b&w",
+    twelveTetLayout.quartal.noteIndexAt,
     twelveTetColorMap.bw
   ),
   new TwelveTET(
