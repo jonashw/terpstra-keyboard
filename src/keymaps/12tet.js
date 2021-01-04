@@ -1,5 +1,5 @@
 import KeyMap from "./KeyMap";
-
+import ETScale from "./ETScale";
 const tones = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
 
 const labels = [
@@ -17,10 +17,7 @@ const labels = [
   "B"
 ];
 
-const genericHz = (stepsPerOctave, refPitch) => (stepsOverRefPitch) =>
-  refPitch * Math.pow(Math.pow(2, 1 / stepsPerOctave), stepsOverRefPitch);
-
-const hz = genericHz(12, 27.5);
+const hz = ETScale(12, 27.5);
 
 //55FF55
 

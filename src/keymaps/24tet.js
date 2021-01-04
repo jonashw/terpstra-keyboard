@@ -1,20 +1,32 @@
 import KeyMap from "./KeyMap";
+import ETScale from "./ETScale";
+const hz = ETScale(24, 27.5);
 
-const tones = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
-
-const labels = [
+const tones = [
   "C",
+  "C≠",
   "C♯",
+  "C𝄪",
   "D",
-  "E♭",
+  "D≠",
+  "D♯",
+  "D𝄪",
   "E",
+  "E≠",
   "F",
+  "F≠",
   "F♯",
+  "F𝄪",
   "G",
-  "A♭",
+  "G≠",
+  "G♯",
+  "G𝄪",
   "A",
-  "B♭",
-  "B"
+  "A≠",
+  "A♯",
+  "A𝄪",
+  "B",
+  "B≠"
 ];
 
 //≠♯𝄪
@@ -32,26 +44,28 @@ class TwentyFourTET extends KeyMap {
     if (!coord) {
       return undefined;
     }
-    const startAdjust = 3;
+    const startAdjust = 6;
     let [y, x] = coord;
     let raw_i = this.noteIndexAt(coord) - startAdjust;
     let i = raw_i % tones.length;
+    let stepsOverA0 = raw_i + startAdjust + (startingOctave - 1) * 24;
+
     let octave = startingOctave + Math.floor(raw_i / tones.length);
     let note = tones.slice(i)[0];
     let octaveNote = `${note}${octave}`;
     let accidental = note.length === 1 ? "" : note[1];
     return {
       id: `${y}.${x}`,
-      label: labels.slice(i)[0] + octave,
+      label: tones.slice(i)[0] + octave,
       color: this.colorMap.slice(i % this.colorMap.length)[0],
-      synthTone: octaveNote,
+      synthTone: hz(stepsOverA0),
       coord,
       //
       note,
       octave,
       letter: note[0],
       accidental,
-      octaveNote: `${note}${octave}`
+      octaveNote
     };
   }
 }

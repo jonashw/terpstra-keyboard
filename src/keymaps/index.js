@@ -1,6 +1,8 @@
 import React from "react";
 import TwelveTET from "./12tet";
 import fourtyEightEDO from "./48edo";
+import TwentyFourTET from "./24tet";
+
 import ColorUtil from "../colorUtil";
 
 import KeyMap from "./KeyMap";
@@ -20,6 +22,21 @@ const twelveTetColorMap = {
   bw: [1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1].map((c) =>
     c === 1 ? "#ffffff" : "#555555"
   ),
+  rainbow: ColorUtil.rainbow(12, 10)
+};
+
+const twentyFourTetColorMap = {
+  gray: "abcdabcdababcdabcdabcdab"
+    .split("")
+    .map((c) =>
+      c === "a"
+        ? "#ffffff"
+        : c === "b"
+        ? "#cccccc"
+        : c === "c"
+        ? "#999999"
+        : "#555555"
+    ),
   rainbow: ColorUtil.rainbow(12, 10)
 };
 
@@ -49,6 +66,12 @@ const twelveTetLayout = {
 };
 
 const all = [
+  new TwentyFourTET(
+    "24tet",
+    "24tet",
+    ([y, x]) => 2 * x + (y % 2),
+    twentyFourTetColorMap.gray
+  ),
   new TwelveTET(
     "halberstadt b&w",
     "12tet halberstadt b&w",
