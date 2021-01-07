@@ -72,13 +72,6 @@ const all = [
     twelveTetLayout.halberstadt.noteIndexAt,
     twelveTetColorMap.bw
   ),
-  new TwentyFourTET(
-    "24tet",
-    "24tet",
-    ([y, x]) => 2 * x + (y % 2),
-    twentyFourTetColorMap.gray
-  ),
-
   new TwelveTET(
     "quartal",
     "12tet quartal b&w",
@@ -86,19 +79,26 @@ const all = [
     twelveTetColorMap.bw
   ),
   new TwelveTET(
-    "quartal rainbow",
-    "12tet quartal rainbow",
-    twelveTetLayout.quartal.noteIndexAt,
-    twelveTetColorMap.rainbow
-  ),
-  new TwelveTET(
     "halberstadt rainbow",
     "12tet halberstadt rainbow",
     twelveTetLayout.halberstadt.noteIndexAt,
     twelveTetColorMap.rainbow
   ),
-  single,
-  fourtyEightEDO
+  new TwelveTET(
+    "quartal rainbow",
+    "12tet quartal rainbow",
+    twelveTetLayout.quartal.noteIndexAt,
+    twelveTetColorMap.rainbow
+  ),
+  new TwentyFourTET(
+    "24tet",
+    "24tet",
+    ([y, x]) => 2 * x + (y % 2),
+    twentyFourTetColorMap.gray
+  )
+
+  //single,
+  //fourtyEightEDO
 ];
 
 const htmlKeyLabelFn = (currentMapping) => {
