@@ -296,14 +296,26 @@ export default function App() {
                     ? ColorUtil.darkenHex(key.mapping.color, 15)
                     : key.mapping.color;
 
+                  const keyIsDown = (e) =>
+                    0 < e.evt.buttons && e.evt.buttons <= 3;
                   let fill = grad(fillColor);
                   return (
                     <Group
                       key={key.id}
                       x={key.x + 1}
                       y={key.y + 2}
-                      onMouseEnter={() => setKeyHighlight(key, true)}
-                      onMouseLeave={() => setKeyHighlight(key, false)}
+                      onMouseDown={() => setKeyHighlight(key, true)}
+                      onMouseUp={() => setKeyHighlight(key, false)}
+                      onMouseOut={(e) => {
+                        if (keyIsDown(e)) {
+                          setKeyHighlight(key, false);
+                        }
+                      }}
+                      onMouseOver={(e) => {
+                        if (keyIsDown(e)) {
+                          setKeyHighlight(key, true);
+                        }
+                      }}
                       onTouchStart={() => setKeyHighlight(key, true)}
                       onTouchEnd={() => setKeyHighlight(key, false)}
                     >

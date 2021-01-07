@@ -53,7 +53,9 @@ export default ({ optionsVisible, setOptionsVisible, options, variables }) => {
 
           {options.map((o) => (
             <ListItem key={o.label}>
-              <Typography gutterBottom>{o.label}</Typography>
+              <Typography key={o.label + "label"} gutterBottom>
+                {o.label}
+              </Typography>
               <br />
               {(() => {
                 switch (o.type) {
