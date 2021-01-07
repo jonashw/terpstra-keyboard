@@ -20,7 +20,7 @@ const initState = {
   audioLoaded: false,
   optionsVisible: false,
   highlighted: {},
-  showQwertyKeys: false,
+  showQwertyKeys: true,
   qwertyDown: {},
   downKeyIds: {},
   rows: 9,
@@ -299,6 +299,7 @@ export default function App() {
                   const keyIsDown = (e) =>
                     0 < e.evt.buttons && e.evt.buttons <= 3;
                   let fill = grad(fillColor);
+                  let keyTextColor = ColorUtil.highContrastHex(fillColor);
                   return (
                     <Group
                       key={key.id}
@@ -329,6 +330,35 @@ export default function App() {
                       />
 
                       <Text
+                        text={key.mapping.octave}
+                        align="center"
+                        verticalAlign="middle"
+                        rotate={-state.rotation}
+                        key={key.id + "-octave"}
+                        x={-keyHexagon.r / 2}
+                        y={(-5 * keyHexagon.r) / 6}
+                        width={keyHexagon.r}
+                        height={keyHexagon.r / 2}
+                        fill={keyTextColor}
+                        fontSize={(1 * keyHexagon.r) / 3}
+                      />
+                      {!!state.showQwertyKeys && (
+                        <Text
+                          text={key.qwertyKey}
+                          align="center"
+                          verticalAlign="middle"
+                          rotate={-state.rotation}
+                          key={key.id + "-qkey"}
+                          x={-keyHexagon.r / 2}
+                          y={-keyHexagon.r / 2}
+                          width={keyHexagon.r}
+                          height={keyHexagon.d}
+                          fill={keyTextColor}
+                          fontSize={(2 * keyHexagon.r) / 5}
+                        />
+                      )}
+
+                      <Text
                         key={key.id + "-text"}
                         x={-keyHexagon.r}
                         y={-keyHexagon.r}
@@ -338,12 +368,8 @@ export default function App() {
                         verticalAlign="middle"
                         rotation={-state.rotation}
                         fontSize={(2 * keyHexagon.r) / 3}
-                        text={
-                          !state.showQwertyKeys
-                            ? key.mapping.label
-                            : key.qwertyKey
-                        }
-                        fill={ColorUtil.highContrastHex(fillColor)}
+                        text={key.mapping.label}
+                        fill={keyTextColor}
                       />
                     </Group>
                   );

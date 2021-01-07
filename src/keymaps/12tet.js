@@ -39,11 +39,11 @@ class TwelveTET extends KeyMap {
     let stepsOverA0 = raw_i + startAdjust + (startingOctave - 1) * 12;
     let note = tones.slice(i)[0];
     let octaveNote = `${note}${octave}`;
-    console.log(raw_i, octaveNote, stepsOverA0, hz(stepsOverA0));
+    //console.log(raw_i, octaveNote, stepsOverA0, hz(stepsOverA0));
     let accidental = note.length === 1 ? "" : note[1];
     return {
       id: `${y}.${x}`,
-      label: labels.slice(i)[0] + octave,
+      label: labels.slice(i)[0],
       color: this.colorMap.slice(i % this.colorMap.length)[0],
       synthTone: hz(stepsOverA0),
       coord,

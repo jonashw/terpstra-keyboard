@@ -17,9 +17,10 @@ export default class KeyMap {
   }
 
   coordToKey(startingOctave, coord) {
-    let note = "C" + startingOctave;
+    let note = "C";
     return {
       label: note,
+      octave: startingOctave,
       synthTone: note,
       color: "red",
       coord

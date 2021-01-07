@@ -66,18 +66,19 @@ const twelveTetLayout = {
 };
 
 const all = [
-  new TwentyFourTET(
-    "24tet",
-    "24tet",
-    ([y, x]) => 2 * x + (y % 2),
-    twentyFourTetColorMap.gray
-  ),
   new TwelveTET(
     "halberstadt b&w",
     "12tet halberstadt b&w",
     twelveTetLayout.halberstadt.noteIndexAt,
     twelveTetColorMap.bw
   ),
+  new TwentyFourTET(
+    "24tet",
+    "24tet",
+    ([y, x]) => 2 * x + (y % 2),
+    twentyFourTetColorMap.gray
+  ),
+
   new TwelveTET(
     "quartal",
     "12tet quartal b&w",

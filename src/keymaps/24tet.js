@@ -56,7 +56,7 @@ class TwentyFourTET extends KeyMap {
     let accidental = note.length === 1 ? "" : note[1];
     return {
       id: `${y}.${x}`,
-      label: tones.slice(i)[0] + octave,
+      label: tones.slice(i)[0],
       color: this.colorMap.slice(i % this.colorMap.length)[0],
       synthTone: hz(stepsOverA0),
       coord,
